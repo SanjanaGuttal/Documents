@@ -1,113 +1,61 @@
-@Library('my-shared-library') _
+oot@ip-172-31-0-193:/home/ubuntu/Java_app_3.0.1/target# history
+    1  sudo apt update -y
+    2  sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+    3  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    4  sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" -y
+    5  sudo apt update -y
+    6  apt-cache policy docker-ce -y
+    7  sudo apt install docker-ce -y
+    8  #sudo systemctl status docker
+    9  sudo chmod 777 /var/run/docker.sock
+   10  sudo usermod -aG docker $USER
+   11  docker pull docker.bintray.io/jfrog/artifactory-oss:latest
+   12  sudo mkdir -p /jfrog/artifactory
+   13  sudo chown -R 1030 /jfrog/
+   14  docker run --name artifactory -d -p 8081:8081 -p 8082:8082 -v /jfrog/artifactory:/var/opt/jfrog/artifactory docker.bintray.io/jfrog/artifactory-oss:latest
+   15  jfrog -v
+   16  jfrog --version
+   18  docker -v
+   19  sudo apt update -y
+   20  sudo apt install maven -y
+   21  mvn -version
+   22  sudo apt update
+   23  sudo apt install git
+   24  git --version
+   25  git clone https://github.com/SanjanaGuttal/Java_app_3.0.1.git
+   26  cd Java_app_3.0.1/
+   27  ls
+   28  mvn clean install -DskipTests
+   29  cd target/
+   30  ls
+   31  ls -ltr
+   32  curl-XPUT-uadmin-Tkubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://54.215.234.179:8082/ui/admin/repositories/local/example-repo-local/edit
+   33  curl-X PUT -u admin -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://54.215.234.179:8082/ui/admin/repositories/local/example-repo-local/edit
+   34  curl -X PUT -u admin -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://54.215.234.179:8082/ui/admin/repositories/local/example-repo-local/edit
+   35  cd Java_app_3.0.1/
+   36  ls
+   37  cd target/
+   38  ls
+   41  curl -X PUT -u admin -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://54.215.234.179:8082/ui/admi2/artifactory/example-repo-local
+   42  curl -X PUT -u admin -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://54.215.234.179:8081/artifactory/example-repo-local/
 
-pipeline{
 
-    agent any
-    //agent { label 'Demo' }
-
-    parameters{
-
-        choice(name: 'action', choices: 'create\ndelete', description: 'Choose create/Destroy')
-        string(name: 'ImageName', description: "name of the docker build", defaultValue: 'javapp')
-        string(name: 'ImageTag', description: "tag of the docker build", defaultValue: 'v1')
-        string(name: 'DockerHubUser', description: "name of the Application", defaultValue: 'praveensingam1994')
-    }
-
-    stages{
-         
-        stage('Git Checkout'){
-                    when { expression {  params.action == 'create' } }
-            steps{
-            gitCheckout(
-                branch: "main",
-                url: "https://github.com/praveen1994dec/Java_app_3.0.git"
-            )
-            }
-        }
-         stage('Unit Test maven'){
-         
-         when { expression {  params.action == 'create' } }
-
-            steps{
-               script{
-                   
-                   mvnTest()
-               }
-            }
-        }
-         stage('Integration Test maven'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   mvnIntegrationTest()
-               }
-            }
-        }
-        stage('Static code analysis: Sonarqube'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   def SonarQubecredentialsId = 'sonarqube-api'
-                   statiCodeAnalysis(SonarQubecredentialsId)
-               }
-            }
-       }
-       stage('Quality Gate Status Check : Sonarqube'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   def SonarQubecredentialsId = 'sonarqube-api'
-                   QualityGateStatus(SonarQubecredentialsId)
-               }
-            }
-       }
-        stage('Maven Build : maven'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   mvnBuild()
-               }
-            }
-        }
-        stage('Docker Image Build'){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   dockerBuild("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
-               }
-            }
-        }
-         stage('Docker Image Scan: trivy '){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   dockerImageScan("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
-               }
-            }
-        }
-        stage('Docker Image Push : DockerHub '){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   dockerImagePush("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
-               }
-            }
-        }   
-        stage('Docker Image Cleanup : DockerHub '){
-         when { expression {  params.action == 'create' } }
-            steps{
-               script{
-                   
-                   dockerImageCleanup("${params.ImageName}","${params.ImageTag}","${params.DockerHubUser}")
-               }
-            }
-        }      
-    }
-}
+root@ip-172-31-0-193:/home/ubuntu/Java_app_3.0.1/target# curl -X PUT -u admin -T kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar http://54.215.234.179:8081/artifactory/example-repo-local/
+Enter host password for user 'admin':
+{
+  "repo" : "example-repo-local",
+  "path" : "/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar",
+  "created" : "2024-02-08T12:37:26.071Z",
+  "createdBy" : "admin",
+  "downloadUri" : "http://54.215.234.179:8081/artifactory/example-repo-local/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar",
+  "mimeType" : "application/java-archive",
+  "size" : "39457358",
+  "checksums" : {
+    "sha1" : "e3a72a8b851d036abfc3c2ccca9af047fc1c99fd",
+    "md5" : "dbe5e552db766b9573201b9d97d42d1c",
+    "sha256" : "e6315318f0a26353ce062c8ab246af79e0019b56c631efa0391ba11e3aebbf54"
+  },
+  "originalChecksums" : {
+    "sha256" : "e6315318f0a26353ce062c8ab246af79e0019b56c631efa0391ba11e3aebbf54"
+  },
+  "uri" : "http://54.215.234.179:8081/artifactory/example-repo-local/kubernetes-configmap-reload-0.0.1-SNAPSHOT.jar"
