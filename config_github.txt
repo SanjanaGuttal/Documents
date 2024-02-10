@@ -1,0 +1,9 @@
+From your GitHub account, go to Settings → Developer Settings → Personal Access Token → Tokens (classic) → Generate New Token (Give your password) → Fillup the form → click Generate token → Copy the generated Token, it will be something like ghp_sFhFsSHhTzMDreGRLjmks4Tzuzgthdvfsrta
+
+git clone https://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@github.com/SanjanaGuttal/Documents.git
+
+add file and commit
+
+git push -u origin main
+
+FInallu!, commit is pushed to github
