@@ -1,0 +1,325 @@
+[root@ip-172-31-13-79 shell]# cat sed.sh | sed '1! G'
+ABCD
+EFGH
+
+IJKLMNO
+
+PQRST
+
+XYZ
+
+[root@ip-172-31-13-79 shell]# cat sed.sh | sed '1! G;h'
+ABCD
+EFGH
+ABCD
+IJKLMNO
+EFGH
+ABCD
+PQRST
+IJKLMNO
+EFGH
+ABCD
+XYZ
+PQRST
+IJKLMNO
+EFGH
+ABCD
+[root@ip-172-31-13-79 shell]# cat sed.sh | sed '1! G;h;$!d'
+XYZ
+PQRST
+IJKLMNO
+EFGH
+ABCD
+Here G command appends to the pattern space,
+h command copies pattern buffer to hold buffer
+and d command deletes the current pattern space.
+
+
+[root@ip-172-31-13-79 shell]# cat sed.sh | sed s/'ABCD'/'XYZ'/g
+XYZ
+EFGH
+IJKLMNO
+PQRST
+XYZ
+
+https://www.guru99.com/shell-scripting-interview-questions.html
+
+======================
+
+if test $AREANG = 1 ; then
+	NG=1
+fi
+
+git log --pretty=format: --summary -1 > file_permission.txt
+
+###################################################################
+#Check Copyright claim(s).
+###################################################################
+if test $COPYRIGHTNG = 1; then #to exclude copyright check
+git log --pretty=format: --name-only -1
+git log --pretty=format: --name-only -1 > change_files.txt
+
+#Check "Sony Mobile Communications"
+for i in $(cat change_files.txt)
+do
+	if grep "Sony Mobile Communications" $i > /dev/null; then
+		echo "$i" >> $NG_COPYRIGHT_FILES
+		COPYRIGHTNG=1
+		NG=1
+	else
+		COPYRIGHTOK=1
+	fi
+done
+
+
+if test $COPYRIGHTNG = 1; then
+	echo "Copyright claim(s): NG" > $COPYRIGHT_ERROR
+	cat $NG_COPYRIGHT_FILES >> $COPYRIGHT_ERROR
+	echo "Please change copyright claim(s) from \"Sony Mobile Communications\" to \"Sony Corporation\"." >> $COPYRIGHT_ERROR
+	echo "Reference: https://confluence.ajdc.sony.co.jp/pages/viewpage.action?pageId=462037981" >> $COPYRIGHT_ERROR
+elif test $COPYRIGHTOK = 1; then
+	echo "Copyright claim(s): OK" > $COPYRIGHT_ERROR
+fi
+fi #to exclude copyright check
+
+########################
+#Config directory checker
+########################i
+if [ $GERRIT_PROJECT = "platform/vendor/semc/products/qssi" ]; then
+	find  oem -depth -type d > $OEMDIFF
+	find  product -depth -type d > $PRODUCTDIFF
+	find  systemext -depth -type d > $SYSTEMDIFF
+
+	firstparent=$(git rev-parse ${GERRIT_PATCHSET_REVISION}^)
+	echo ${firstparent}
+
+	git reset --hard ${firstparent}
+	find  oem -depth -type d > $OEMPARDIFF
+	find  product -depth -type d > $PRODUCTPARDIFF
+	find  systemext -depth -type d > $SYSTEMPARDIFF
+
+	diff $OEMDIFF $OEMPARDIFF > $DIFF || true
+	diff $PRODUCTDIFF $PRODUCTPARDIFF >> $DIFF || true
+	diff $SYSTEMDIFF $SYSTEMPARDIFF >> $DIFF || true
+
+	if [ -s $DIFF ]; then
+		# The file is not-empty.
+	        echo "Warning: New directory has been added, Please check directory name" > $CONFIG_ERROR
+	        CONFIGNG=1
+	        NG=1
+	else
+		# The file is empty
+		echo "New file is added" > $CONFIG_ERROR
+	        CONFIGOK=1
+	fi
+fi
+
+#-------------------------------#
+# Check for Mandatory parameter #
+#-------------------------------#
+if $GREF_FREEZE; then
+	if [ -z "$SYNCEDQSSI_REF_BRANCH" ] && [ -z "$QSSI_REF_BRANCH" ]; then
+		ERROR_MESSAGE="Need to specify QSSI release branch/TAG"
+		echo $ERROR_MESSAGE
+		exit 1
+	fi
+else
+	if [ -z "$QSSI_REF_BRANCH" ]; then
+		ERROR_MESSAGE="Need to specify QSSI release branch/TAG"
+		echo $ERROR_MESSAGE
+		exit 1
+	fi
+fi
+
+# QSSI build
+echo "QSSI Build Started" >> $RESULT_DIR/command_execution.log
+env bash -l -c "cd qssi; \
+	chmod 755 build.sh; \
+	source build/envsetup.sh; \
+	lunch $QSSI_BUILD_PRODUCT-userdebug; \
+	./build.sh -j$CPUNUM --qssi_only dist 2>&1 | tee $RESULT_DIR/qssi_build.log;"
+echo "QSSI Build ended" >> $RESULT_DIR/command_execution.log
+
+
+# Collect previous static manifest info.
+if [ "${PREV_SOURCE_ID}" ]; then
+	mkdir -p  ${WORKSPACE}/previous_bpf
+	cd ${WORKSPACE}/previous_bpf
+	if [ "${TARGET_COMPONENT}" == "android-qssi" ]; then
+		MANIFEST_ARTIFACT=`repository list -b ${PREV_SOURCE_ID} -g android-qssi`
+	fi
+	if [ "${TARGET_COMPONENT}" == "android-target" ]; then
+		MANIFEST_ARTIFACT=`repository list -b ${PREV_SOURCE_ID} -g android-target`
+	fi
+	repository getpackage ${MANIFEST_ARTIFACT}
+	dpkg -x *.deb .
+	cp manifest_static.xml ${WORKSPACE}/result-dir/previous_manifest_static.xml
+	cd -
+	rm -rf ${WORKSPACE}/previous_bpf
+fi
+
+if [ "${TARGET_COMPONENT}" == "android-qssi" ] && [ -n "${MPF_SOURCE_LABEL}" ]; then
+
+if [ -n "$REVIEWERS" ]; then
+	REVIEWERS=`echo $REVIEWERS | sed 's/,/ --reviewer /g'`
+	lunch $QSSI_BUILD_PRODUCT-userdebug; \
+	./build.sh -j$CPUNUM --qssi_only dist 2>&1 | tee $RESULT_DIR/qssi_build.log;"
+echo "QSSI Build ended" >> $RESULT_DIR/command_execution.log
+
+
+# Collect previous static manifest info.
+if [ "${PREV_SOURCE_ID}" ]; then
+	mkdir -p  ${WORKSPACE}/previous_bpf
+	cd ${WORKSPACE}/previous_bpf
+	if [ "${TARGET_COMPONENT}" == "android-qssi" ]; then
+		MANIFEST_ARTIFACT=`repository list -b ${PREV_SOURCE_ID} -g android-qssi`
+	fi
+	if [ "${TARGET_COMPONENT}" == "android-target" ]; then
+		MANIFEST_ARTIFACT=`repository list -b ${PREV_SOURCE_ID} -g android-target`
+	fi
+	repository getpackage ${MANIFEST_ARTIFACT}
+	dpkg -x *.deb .
+	cp manifest_static.xml ${WORKSPACE}/result-dir/previous_manifest_static.xml
+	cd -
+	rm -rf ${WORKSPACE}/previous_bpf
+fi
+
+if [ "${TARGET_COMPONENT}" == "android-qssi" ] && [ -n "${MPF_SOURCE_LABEL}" ]; then
+
+if [ -n "$REVIEWERS" ]; then
+	REVIEWERS=`echo $REVIEWERS | sed 's/,/ --reviewer /g'`
+	REVIEWERS="--reviewer ${REVIEWERS}"
+else
+	REVIEWERS=""
+fi
+
+
+GIT_LIST=`cat ${WORKSPACE}/${MANIFEST_PROJECT}/default.xml | grep 'revision="[a-z0-9]\{40\}"' \
+	| grep -v bpf | sed 's/^.*project name="/ /' | sed 's/".*/ /'| sed 's/ //'`
+GIT_LIST=`echo $GIT_LIST | sed 's/ / -x /g'`
+
+
+
+
+USAGE="Usage: `basename $0` [-b] [-c] [-e] [-g] [-i] [-j] [-k] [-l] [-m] [-n] [-p] [-r] [-t] [-u] [-v] [-x]
+
+-b  Base SW label
+-c  component type i.e android, android-qssi, android-target
+-e  exclusive projects requested by FAT to add from base label for baseup
+    these projects only exist in baselabel or cannot filtered out using baseup check
+    (Comma separated list)
+-g  Group atribute (Comma separated group attribute to consider the projects)
+-i  Include branch (Comma seperated branch names)
+-j  Android Jenkins URL.
+    e.g. http://android-ci-cm.jpto.sonyericsson.net/job/
+    local_build_volatile-l-mr1-loire/15/
+-k  Previous MPF LABEL
+-l  Current MPF LABEL
+-m  manifest type i.e manifest, targetmanifest, qssimanifest
+-n  New incoming release
+-p  Include project (Comma seperated project names)
+-r  INT Branch name
+-t  protected (if the base SW label is in protected C2D server)
+    while using this option:
+    - run kinit in teminal when executing this script in local machine.
+    - run kerberos_start when executing this script in Jenkins.
+-u  Previous BPF LABEL
+-v  Current BPF LABEL
+-x  Exclude Project (Comma seperated project names)
+"
+
+if [ $# -eq 0 ]; then
+    echo -e "Not enough argument.\n$USAGE" >&2
+    exit 1
+fi
+
+while getopts b:c:e:i:j:k:l:m:n:p:r:t:u:v:x:h: OPTION; do
+    case ${OPTION} in
+        b)  BASE_LABEL=$OPTARG
+            ;;
+        c)  COMPONENT_TYPE=$OPTARG
+            ;;
+        e)  EXTRA_BASE_PROJECTS=$OPTARG
+            ;;
+        i)  INCLUDE_BRANCH=$OPTARG
+            ;;
+        j)  JENKINS_URL=$OPTARG
+            ;;
+        k)  PREV_MPF_URL=$OPTARG
+            ;;
+        l)  CURR_MPF_URL=$OPTARG
+            ;;
+        m)  MANIFEST_DIR=$OPTARG
+            ;;
+        n)  NEW_RELEASE=$OPTARG
+            ;;
+        p)  INCLUDE_PROJECT=$OPTARG
+            ;;
+        r)  INT_BRANCH=$OPTARG
+            ;;
+        t)  PROTECTED=$OPTARG
+            ;;
+        u)  PREV_BPF_URL=$OPTARG
+            ;;
+        v)  CURR_BPF_URL=$OPTARG
+            ;;
+        x)  EXCLUDE_PROJECT=$OPTARG
+            ;;
+        h)  echo "$USAGE" >&2
+            exit 2
+            ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+
+if [ "$?" != 0 ]; then
+        exit 1
+fi
+
+sort -u ${WORKDIR}/${INTERMEDIATE_PROJECT_LIST} \
+    -o ${WORKDIR}/${INTERMEDIATE_PROJECT_LIST}
+
+-u --> remove duplicates
+-n --> numerical order
+-o --> redirecting output of thr file
+
+
+# Prepare script arguments.
+SCRIPT_ARGS=""
+if [ ${MANIFEST_TYPE} ]; then
+	SCRIPT_ARGS=$SCRIPT_ARGS" -m ${MANIFEST_TYPE}"
+else
+	echo "MANIFEST_TYPE missing."
+	exit 1
+fi
+	SCRIPT_ARGS=$SCRIPT_ARGS" -j ${JENKINS_URL}"
+else
+	echo "Either Base SW label or Jenkins build URL is required."
+	exit 1
+fi
+if [ ${EXCLUDE_PROJECT} ]; then
+	SCRIPT_ARGS=$SCRIPT_ARGS" -x ${EXCLUDE_PROJECT}"
+fi
+if [ ${INCLUDE_BRANCH} ]; then
+	SCRIPT_ARGS=$SCRIPT_ARGS" -i ${INCLUDE_BRANCH}"
+fi
+if [ ${INCLUDE_PROJECT} ]; then
+	SCRIPT_ARGS=$SCRIPT_ARGS" -p ${INCLUDE_PROJECT}"
+fi
+if [ ${EXTRA_BASE_PROJECTS} ]; then
+	SCRIPT_ARGS=$SCRIPT_ARGS" -e ${EXTRA_BASE_PROJECTS}"
+fi
+
+#Set the Description
+JOB_DESCRIPTION="<font size=2><b>${NEW_RELEASE}</b></font><br>${INT_BRANCH}"
+JOB_DESCRIPTION=`echo $JOB_DESCRIPTION | sed 's/ /%20/g'`
+curl -s "${BUILD_URL}submitDescription" --data "description=${JOB_DESCRIPTION}"
+
+# copy google static manifest to the root
+getGoogleManifest
+
+# Run the Script
+cd $WORKSPACE
+
+$WORKSPACE/tbut-tools/vi_android/find-integration-target.sh ${SCRIPT_ARGS}
